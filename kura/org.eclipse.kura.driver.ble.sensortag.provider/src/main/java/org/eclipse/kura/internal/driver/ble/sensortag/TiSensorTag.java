@@ -742,9 +742,9 @@ public class TiSensorTag {
             int y = shortSignedAtOffset(valueByte, 2);
             int z = shortSignedAtOffset(valueByte, 4);
 
-            magneticField[0] = x * (2000f / 65536f) * -1;
-            magneticField[1] = y * (2000f / 65536f) * -1;
-            magneticField[2] = z * (2000f / 65536f);
+            magneticField[0] = (x * ((double) 2000.0F / (double) 65536.0F)) * -1;
+            magneticField[1] = (y * ((double) 2000.0F / (double) 65536.0F)) * -1;
+            magneticField[2] = z * ((double) 2000.0F / (double) 65536.0F);
         }
 
         return magneticField;
@@ -1071,9 +1071,9 @@ public class TiSensorTag {
             gyroscope[1] = y / scale;
             gyroscope[2] = z / scale;
         } else {
-            gyroscope[0] = x * (500f / 65536f);
-            gyroscope[1] = y * (500f / 65536f) * -1;
-            gyroscope[2] = z * (500f / 65536f);
+            gyroscope[0] = x * ((double) 500.0F / (double) 65536.0F);
+            gyroscope[1] = (y * ((double) 500.0F / (double) 65536.0F)) * -1;
+            gyroscope[2] = z * ((double) 500.0F / (double) 65536.0F);
         }
 
         return gyroscope;
