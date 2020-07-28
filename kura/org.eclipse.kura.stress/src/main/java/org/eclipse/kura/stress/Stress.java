@@ -144,7 +144,7 @@ public class Stress implements ConfigurableComponent {
 
                         Thread.currentThread().setName(name);
                     }
-                }, delay * i, interval, TimeUnit.MILLISECONDS);
+                }, (long) delay * i, interval, TimeUnit.MILLISECONDS);
                 this.handle.add(futureHandle);
             }
         }

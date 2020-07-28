@@ -239,7 +239,7 @@ public class BinaryDataTest {
         testAdapterWrite(a -> new GainOffset(a, -1.0f, 10.0f), 10.0d, (short) (-10 + 10));
         testAdapterWrite(a -> new GainOffset(a, -2.0f, 54.0f), 10.0d, (float) (-20 + 54));
         testAdapterWrite(a -> new GainOffset(a, -5.0f, 1.0f), 10.0d, (double) (-50 + 1));
-        testAdapterWrite(a -> new GainOffset(a, -11.0f, 22.0f), 10.0d, BigInteger.valueOf(-110 + 22));
+        testAdapterWrite((a) -> new GainOffset(a, -11.0f, 22.0f), 10.0, BigInteger.valueOf((long) (-110) + 22));
     }
 
     @Test
