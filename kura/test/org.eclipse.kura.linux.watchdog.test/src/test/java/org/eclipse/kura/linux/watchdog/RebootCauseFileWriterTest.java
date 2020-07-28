@@ -43,17 +43,15 @@ public class RebootCauseFileWriterTest {
 
         svc.writeRebootCause("test");
 
-        assertTrue(f.length() >= 18);
-
-        FileReader reader = new FileReader(f);
-        char[] cbuf = new char[100];
-        int read = reader.read(cbuf);
-        reader.close();
-
-        f.delete();
-
-        String s = new String(cbuf, 0, read);
-        assertTrue(s.contains("test"));
+        org.junit.Assert.assertTrue(f.length() >= 18);
+		try (java.io.FileReader reader = new java.io.FileReader(f)) {
+			char[] cbuf = new char[100];
+			int read = reader.read(cbuf);
+			reader.close();
+			f.delete();
+			java.lang.String s = new java.lang.String(cbuf, 0, read);
+			org.junit.Assert.assertTrue(s.contains("test"));
+		}
     }
 
 }

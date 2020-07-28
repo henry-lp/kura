@@ -78,37 +78,30 @@ public class DhcpServerTest extends TestCase {
             fail("OSGi dependencies unfulfilled");
             System.exit(1);
         }
-
-        // Backup current dhcpd config
-        try {
-            logger.info("Backing up current dhcpd config to {}", oldConfigBackup);
-
-            // Read current config from file
-            File oldConfig = new File(this.dhcpServer.getConfigFilename());
-            StringBuilder data = new StringBuilder();
-
-            if (oldConfig.exists()) {
-                FileReader fr = new FileReader(oldConfig);
-
-                int in;
-                while ((in = fr.read()) != -1) {
-                    data.append((char) in);
-                }
-                fr.close();
-            }
-
-            // Write current config to file
-            FileOutputStream fos = new FileOutputStream(oldConfigBackup);
-            PrintWriter pw = new PrintWriter(fos);
-            pw.write(data.toString());
-            pw.flush();
-            fos.getFD().sync();
-            pw.close();
-            fos.close();
-        } catch (Exception e) {
-            fail("Error backing up current dhcpd config");
-            System.exit(1);
-        }
+		try (// Write current config to file
+		java.io.FileOutputStream fos = new java.io.FileOutputStream(org.eclipse.kura.linux.test.net.DhcpServerTest.oldConfigBackup)) {
+			org.eclipse.kura.linux.test.net.DhcpServerTest.logger.info("Backing up current dhcpd config to {}", org.eclipse.kura.linux.test.net.DhcpServerTest.oldConfigBackup);
+			// Read current config from file
+			java.io.File oldConfig = new java.io.File(this.dhcpServer.getConfigFilename());
+			java.lang.StringBuilder data = new java.lang.StringBuilder();
+			if (oldConfig.exists()) {
+				java.io.FileReader fr = new java.io.FileReader(oldConfig);
+				int in;
+				while ((in = fr.read()) != (-1)) {
+					data.append(((char) (in)));
+				} 
+				fr.close();
+			}
+			java.io.PrintWriter pw = new java.io.PrintWriter(fos);
+			pw.write(data.toString());
+			pw.flush();
+			fos.getFD().sync();
+			pw.close();
+			fos.close();
+		} catch (java.lang.Exception e) {
+			junit.framework.TestCase.fail("Error backing up current dhcpd config");
+			java.lang.System.exit(1);
+		}
     }
 
     @TestTarget(targetPlatforms = { TestTarget.PLATFORM_ALL })
@@ -208,7 +201,7 @@ public class DhcpServerTest extends TestCase {
 
         if (this.dhcpServer != null) {
             try (FileOutputStream fos = new FileOutputStream(this.dhcpServer.getConfigFilename());
-                    PrintWriter pw = new PrintWriter(fos)) {
+                    PrintWriter pw = new PrintWriter(fos);java.io.PrintWriter pw = new java.io.PrintWriter(fos)) {
                 this.dhcpServer.disable();
                 logger.info("Restoring dhcpd config from {}", oldConfigBackup);
 
@@ -217,13 +210,13 @@ public class DhcpServerTest extends TestCase {
                 StringBuffer data = new StringBuffer();
 
                 if (backupFile.exists()) {
-                    FileReader fr = new FileReader(backupFile);
-
-                    int in;
-                    while ((in = fr.read()) != -1) {
-                        data.append((char) in);
-                    }
-                    fr.close();
+					try (java.io.FileReader fr = new java.io.FileReader(backupFile)) {
+						int in;
+						while ((in = fr.read()) != (-1)) {
+							data.append(((char) (in)));
+						} 
+						fr.close();
+					}
                 }
 
                 // Write backup config to file

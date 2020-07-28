@@ -27,25 +27,20 @@ public class ClassPathLibraryLoader {
 		                // have to use a stream
 		                InputStream in = ClassPathLibraryLoader.class.getResourceAsStream(path);
 		                if (in != null) {
-		                	try {
-				                // always write to different location
-				                String tempName = path.substring(path.lastIndexOf('/') + 1);
-				                File fileOut = File.createTempFile(tempName.substring(0, tempName.lastIndexOf('.')), tempName.substring(tempName.lastIndexOf('.'), tempName.length()));
-				                fileOut.deleteOnExit();
-				                
-				                OutputStream out = new FileOutputStream(fileOut);
-				                byte[] buf = new byte[1024];
-				                int len;
-				                while ((len = in.read(buf)) > 0){            
-				                	out.write(buf, 0, len);
-				                }
-				                
-				                out.close();
-				                Runtime.getRuntime().load(fileOut.toString());
-				                isHIDLibLoaded = true;
-		                	} finally {
-		                		in.close();
-		                	}
+					try (java.io.OutputStream out = new java.io.FileOutputStream(fileOut)) {
+						// always write to different location
+						java.lang.String tempName = path.substring(path.lastIndexOf('/') + 1);
+						java.io.File fileOut = java.io.File.createTempFile(tempName.substring(0, tempName.lastIndexOf('.')), tempName.substring(tempName.lastIndexOf('.'), tempName.length()));
+						fileOut.deleteOnExit();
+						byte[] buf = new byte[1024];
+						int len;
+						while ((len = in.read(buf)) > 0) {
+							out.write(buf, 0, len);
+						} 
+						out.close();
+						java.lang.Runtime.getRuntime().load(fileOut.toString());
+						isHIDLibLoaded = true;
+					}
 		                }	                
 		        } catch (Exception e) {
 		        	  // ignore

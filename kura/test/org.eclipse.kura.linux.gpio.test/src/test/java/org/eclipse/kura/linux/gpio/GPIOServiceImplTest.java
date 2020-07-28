@@ -42,81 +42,60 @@ public class GPIOServiceImplTest {
 
         String led1 = "user led 1";
         String testpin1 = "testpin1";
-        FileWriter fw = new FileWriter(f);
-        fw.write("1=name:" + led1 + ",deviceType:gpio.GPIOPin,direction:1,mode:8,trigger:0\n");
-        fw.write("2=name:" + testpin1 + ",deviceType:gpio.GPIOPin,direction:1,mode:8,trigger:0");
-        fw.close();
-
-        svc.activate(null);
-
-        f.delete();
-
-        Set<JdkDioPin> pins = (Set) TestUtil.getFieldValue(svc, "pins");
-        assertEquals(2, pins.size());
-
-        KuraGPIOPin pin = pins.iterator().next();
-        assertEquals(KuraGPIOMode.OUTPUT_OPEN_DRAIN, pin.getMode());
-        assertEquals(KuraGPIODirection.OUTPUT, pin.getDirection());
-        assertEquals(KuraGPIOTrigger.NONE, pin.getTrigger());
-        assertTrue(1 == pin.getIndex() || 2 == pin.getIndex());
-        assertTrue(led1.equals(pin.getName()) || testpin1.equals(pin.getName()));
-
-        // get all pins
-        Map<Integer, String> availablePins = svc.getAvailablePins();
-        assertEquals(pins.size(), availablePins.size());
-        assertEquals(led1, availablePins.get(1));
-        assertEquals(testpin1, availablePins.get(2));
-
-        // get by name
-        pin = svc.getPinByName("user led 2");
-        assertNull(pin);
-
-        pin = svc.getPinByName(led1);
-        assertNotNull(pin);
-
-        // get by name with pin creation
-        KuraGPIOPin pin2 = svc.getPinByName(led1, KuraGPIODirection.OUTPUT, KuraGPIOMode.OUTPUT_OPEN_DRAIN,
-                KuraGPIOTrigger.HIGH_LEVEL);
-
-        assertNotEquals(pin, pin2);
-        assertEquals(2, pins.size());
-
-        // by terminal (index)
-        KuraGPIOPin pin1 = svc.getPinByTerminal(1);
-
-        assertEquals(1, pin1.getIndex());
-        assertEquals(2, pins.size());
-        assertEquals(pin2, pin1);
-
-        // by terminal, new pin
-        pin = svc.getPinByTerminal(3);
-
-        assertEquals(3, pin.getIndex());
-        assertEquals(3, pins.size());
-
-        // the other 'by terminal'...
-        pin = svc.getPinByTerminal(1, KuraGPIODirection.OUTPUT, KuraGPIOMode.OUTPUT_OPEN_DRAIN,
-                KuraGPIOTrigger.HIGH_LEVEL);
-
-        assertEquals(1, pin.getIndex());
-        assertEquals(pin1, pin);
-        assertEquals(3, pins.size());
-
-        // the other 'by terminal', new pin, overwrite
-        pin = svc.getPinByTerminal(1, KuraGPIODirection.OUTPUT, KuraGPIOMode.OUTPUT_OPEN_DRAIN, KuraGPIOTrigger.NONE);
-
-        assertEquals(1, pin.getIndex());
-        assertNotEquals(pin1, pin);
-        assertEquals(3, pins.size());
-
-        // the other 'by terminal', entirely new pin
-        pin = svc.getPinByTerminal(4, KuraGPIODirection.OUTPUT, KuraGPIOMode.OUTPUT_OPEN_DRAIN, KuraGPIOTrigger.NONE);
-
-        assertEquals(4, pin.getIndex());
-        assertEquals(4, pins.size());
-
-        // deactivate
-        svc.deactivate(null);
+		try (java.io.FileWriter fw = new java.io.FileWriter(f)) {
+			fw.write(("1=name:" + led1) + ",deviceType:gpio.GPIOPin,direction:1,mode:8,trigger:0\n");
+			fw.write(("2=name:" + testpin1) + ",deviceType:gpio.GPIOPin,direction:1,mode:8,trigger:0");
+			fw.close();
+			svc.activate(null);
+			f.delete();
+			java.util.Set<org.eclipse.kura.linux.gpio.JdkDioPin> pins = ((java.util.Set) (org.eclipse.kura.core.testutil.TestUtil.getFieldValue(svc, "pins")));
+			org.junit.Assert.assertEquals(2, pins.size());
+			org.eclipse.kura.gpio.KuraGPIOPin pin = pins.iterator().next();
+			org.junit.Assert.assertEquals(KuraGPIOMode.OUTPUT_OPEN_DRAIN, pin.getMode());
+			org.junit.Assert.assertEquals(KuraGPIODirection.OUTPUT, pin.getDirection());
+			org.junit.Assert.assertEquals(KuraGPIOTrigger.NONE, pin.getTrigger());
+			org.junit.Assert.assertTrue((1 == pin.getIndex()) || (2 == pin.getIndex()));
+			org.junit.Assert.assertTrue(led1.equals(pin.getName()) || testpin1.equals(pin.getName()));
+			// get all pins
+			java.util.Map<java.lang.Integer, java.lang.String> availablePins = svc.getAvailablePins();
+			org.junit.Assert.assertEquals(pins.size(), availablePins.size());
+			org.junit.Assert.assertEquals(led1, availablePins.get(1));
+			org.junit.Assert.assertEquals(testpin1, availablePins.get(2));
+			// get by name
+			pin = svc.getPinByName("user led 2");
+			org.junit.Assert.assertNull(pin);
+			pin = svc.getPinByName(led1);
+			org.junit.Assert.assertNotNull(pin);
+			// get by name with pin creation
+			org.eclipse.kura.gpio.KuraGPIOPin pin2 = svc.getPinByName(led1, KuraGPIODirection.OUTPUT, KuraGPIOMode.OUTPUT_OPEN_DRAIN, KuraGPIOTrigger.HIGH_LEVEL);
+			org.junit.Assert.assertNotEquals(pin, pin2);
+			org.junit.Assert.assertEquals(2, pins.size());
+			// by terminal (index)
+			org.eclipse.kura.gpio.KuraGPIOPin pin1 = svc.getPinByTerminal(1);
+			org.junit.Assert.assertEquals(1, pin1.getIndex());
+			org.junit.Assert.assertEquals(2, pins.size());
+			org.junit.Assert.assertEquals(pin2, pin1);
+			// by terminal, new pin
+			pin = svc.getPinByTerminal(3);
+			org.junit.Assert.assertEquals(3, pin.getIndex());
+			org.junit.Assert.assertEquals(3, pins.size());
+			// the other 'by terminal'...
+			pin = svc.getPinByTerminal(1, KuraGPIODirection.OUTPUT, KuraGPIOMode.OUTPUT_OPEN_DRAIN, KuraGPIOTrigger.HIGH_LEVEL);
+			org.junit.Assert.assertEquals(1, pin.getIndex());
+			org.junit.Assert.assertEquals(pin1, pin);
+			org.junit.Assert.assertEquals(3, pins.size());
+			// the other 'by terminal', new pin, overwrite
+			pin = svc.getPinByTerminal(1, KuraGPIODirection.OUTPUT, KuraGPIOMode.OUTPUT_OPEN_DRAIN, KuraGPIOTrigger.NONE);
+			org.junit.Assert.assertEquals(1, pin.getIndex());
+			org.junit.Assert.assertNotEquals(pin1, pin);
+			org.junit.Assert.assertEquals(3, pins.size());
+			// the other 'by terminal', entirely new pin
+			pin = svc.getPinByTerminal(4, KuraGPIODirection.OUTPUT, KuraGPIOMode.OUTPUT_OPEN_DRAIN, KuraGPIOTrigger.NONE);
+			org.junit.Assert.assertEquals(4, pin.getIndex());
+			org.junit.Assert.assertEquals(4, pins.size());
+			// deactivate
+			svc.deactivate(null);
+		}
     }
 
     @Test
