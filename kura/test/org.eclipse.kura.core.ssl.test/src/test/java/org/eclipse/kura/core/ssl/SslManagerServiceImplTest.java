@@ -766,40 +766,31 @@ public class SslManagerServiceImplTest {
         gen.initialize(1024);
         KeyPair pair = gen.generateKeyPair();
         Key key = pair.getPrivate();
+		try (java.io.InputStream is = new java.io.FileInputStream(org.eclipse.kura.core.ssl.SslManagerServiceImplTest.CERT_FILE_PATH)) {
+			java.security.cert.Certificate certificate = java.security.cert.CertificateFactory.getInstance("X.509").generateCertificate(is);
+			is.close();
+			java.security.cert.Certificate[] chain = new java.security.cert.Certificate[]{ certificate };
+			java.security.KeyStore store = java.security.KeyStore.getInstance("jks");
+			is = new java.io.FileInputStream(org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PATH);
+			store.load(is, org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PASS);
+			is.close();
+			java.lang.String alias = "kuraTestAlias";
+			store.setKeyEntry(alias, key, org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PASS, chain);
+			org.junit.Assert.assertTrue(store.isKeyEntry(alias));
+			store.getKey(alias, org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PASS);
+			// update KS password
+			char[] newPass = "new password".toCharArray();
+			org.eclipse.kura.core.testutil.TestUtil.invokePrivate(svc, "updateKeyEntiesPasswords", store, org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PASS, newPass);
+			org.junit.Assert.assertTrue(store.isKeyEntry(alias));// key is still in there
 
-        InputStream is = new FileInputStream(CERT_FILE_PATH);
-        Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(is);
-        is.close();
-
-        Certificate[] chain = { certificate };
-
-        KeyStore store = KeyStore.getInstance("jks");
-
-        is = new FileInputStream(KEY_STORE_PATH);
-        store.load(is, KEY_STORE_PASS);
-        is.close();
-
-        String alias = "kuraTestAlias";
-        store.setKeyEntry(alias, key, KEY_STORE_PASS, chain);
-
-        assertTrue(store.isKeyEntry(alias));
-        store.getKey(alias, KEY_STORE_PASS);
-
-        // update KS password
-        char[] newPass = "new password".toCharArray();
-
-        TestUtil.invokePrivate(svc, "updateKeyEntiesPasswords", store, KEY_STORE_PASS, newPass);
-
-        assertTrue(store.isKeyEntry(alias)); // key is still in there
-
-        try {
-            store.getKey(alias, KEY_STORE_PASS);
-            fail("Old password shouldn't work anymore.");
-        } catch (UnrecoverableKeyException e) {
-            // expected
-        }
-
-        store.getKey(alias, newPass);
+			try {
+				store.getKey(alias, org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PASS);
+				org.junit.Assert.fail("Old password shouldn't work anymore.");
+			} catch (java.security.UnrecoverableKeyException e) {
+				// expected
+			}
+			store.getKey(alias, newPass);
+		}
     }
 
     @SuppressWarnings("unchecked")
@@ -915,44 +906,34 @@ public class SslManagerServiceImplTest {
         gen.initialize(1024);
         KeyPair pair = gen.generateKeyPair();
         Key key = pair.getPrivate();
+		try (java.io.InputStream is = new java.io.FileInputStream(org.eclipse.kura.core.ssl.SslManagerServiceImplTest.CERT_FILE_PATH)) {
+			java.security.cert.Certificate certificate = java.security.cert.CertificateFactory.getInstance("X.509").generateCertificate(is);
+			is.close();
+			java.security.cert.Certificate[] chain = new java.security.cert.Certificate[]{ certificate };
+			java.lang.String alias = "kuraTestAlias";
+			svc.installPrivateKey(alias, ((java.security.PrivateKey) (key)), org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PASS, chain);
+			java.security.KeyStore store = java.security.KeyStore.getInstance("jks");
+			is = new java.io.FileInputStream(org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PATH);
+			store.load(is, org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PASS);
+			is.close();
+			org.junit.Assert.assertTrue(store.isKeyEntry(alias));
+			// install another private key and check that getKeyStore only returns one, if alias is specified
+			pair = gen.generateKeyPair();
+			key = pair.getPrivate();
+			svc.installPrivateKey("secondKey", ((java.security.PrivateKey) (key)), org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PASS, chain);
+			java.security.KeyStore ks = ((java.security.KeyStore) (org.eclipse.kura.core.testutil.TestUtil.invokePrivate(svc, "getKeyStore", org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PATH, org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PASS, alias)));
+			org.junit.Assert.assertNotNull(ks);
+			org.junit.Assert.assertTrue(ks.containsAlias(alias));
+			java.util.Enumeration<java.lang.String> aliases = ks.aliases();// all lowercase aliases???
 
-        InputStream is = new FileInputStream(CERT_FILE_PATH);
-        Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(is);
-        is.close();
+			org.junit.Assert.assertNotNull(aliases);
+			java.util.List<java.lang.String> aliasList = new java.util.ArrayList<>();// only for size
 
-        Certificate[] chain = { certificate };
-
-        String alias = "kuraTestAlias";
-        svc.installPrivateKey(alias, (PrivateKey) key, KEY_STORE_PASS, chain);
-
-        KeyStore store = KeyStore.getInstance("jks");
-
-        is = new FileInputStream(KEY_STORE_PATH);
-        store.load(is, KEY_STORE_PASS);
-        is.close();
-
-        assertTrue(store.isKeyEntry(alias));
-
-        // install another private key and check that getKeyStore only returns one, if alias is specified
-
-        pair = gen.generateKeyPair();
-        key = pair.getPrivate();
-
-        svc.installPrivateKey("secondKey", (PrivateKey) key, KEY_STORE_PASS, chain);
-
-        KeyStore ks = (KeyStore) TestUtil.invokePrivate(svc, "getKeyStore", KEY_STORE_PATH, KEY_STORE_PASS, alias);
-
-        assertNotNull(ks);
-        assertTrue(ks.containsAlias(alias));
-
-        Enumeration<String> aliases = ks.aliases(); // all lowercase aliases???
-        assertNotNull(aliases);
-
-        List<String> aliasList = new ArrayList<>(); // only for size
-        while (aliases.hasMoreElements()) {
-            aliasList.add(aliases.nextElement());
-        }
-        assertEquals(1, aliasList.size());
+			while (aliases.hasMoreElements()) {
+				aliasList.add(aliases.nextElement());
+			} 
+			org.junit.Assert.assertEquals(1, aliasList.size());
+		}
     }
 
     @Test
@@ -999,54 +980,43 @@ public class SslManagerServiceImplTest {
         svc.updated(properties);
 
         KeyStore store = KeyStore.getInstance("jks");
-
-        InputStream is = new FileInputStream(KEY_STORE_PATH);
         store.load(is, KEY_STORE_PASS);
         is.close();
 
         // add a certificate
         X509Certificate[] certificates = svc.getTrustCertificates();
 
-        assertEquals(0, certificates.length);
-
-        is = new FileInputStream(CERT_FILE_PATH);
-        Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(is);
-        is.close();
-
-        String alias = "kura";
-        svc.installTrustCertificate(alias, (X509Certificate) certificate);
-
-        // does service return the new cert?
-        X509Certificate[] tcs = svc.getTrustCertificates();
-        assertEquals(1, tcs.length);
-        X509Certificate cert = tcs[0];
-        assertEquals(BigInteger.valueOf(0x4afb9c19), cert.getSerialNumber());
-
-        // is it really in the keystore as well
-        is = new FileInputStream(KEY_STORE_PATH);
-        store.load(is, KEY_STORE_PASS);
-        is.close();
-
-        cert = (X509Certificate) store.getCertificate(alias);
-
-        assertNotNull(cert);
-        assertEquals(BigInteger.valueOf(0x4afb9c19), cert.getSerialNumber());
-        X500Principal issuer = cert.getIssuerX500Principal();
-        String rfcNames = issuer.getName();
-        assertEquals("CN=kura", rfcNames);
-
-        // delete the certificate
-        svc.deleteTrustCertificate(alias);
-
-        // does service stil return the deleted cert?
-        tcs = svc.getTrustCertificates();
-        assertEquals(0, tcs.length);
-
-        // is it really not in the keystore enymore
-        is = new FileInputStream(KEY_STORE_PATH);
-        store.load(is, KEY_STORE_PASS);
-        is.close();
-
-        assertFalse(store.isCertificateEntry(alias));
+        org.junit.Assert.assertEquals(0, certificates.length);
+		try (java.io.InputStream is = new java.io.FileInputStream(org.eclipse.kura.core.ssl.SslManagerServiceImplTest.CERT_FILE_PATH)) {
+			java.security.cert.Certificate certificate = java.security.cert.CertificateFactory.getInstance("X.509").generateCertificate(is);
+			is.close();
+			java.lang.String alias = "kura";
+			svc.installTrustCertificate(alias, ((java.security.cert.X509Certificate) (certificate)));
+			// does service return the new cert?
+			java.security.cert.X509Certificate[] tcs = svc.getTrustCertificates();
+			org.junit.Assert.assertEquals(1, tcs.length);
+			java.security.cert.X509Certificate cert = tcs[0];
+			org.junit.Assert.assertEquals(java.math.BigInteger.valueOf(0x4afb9c19), cert.getSerialNumber());
+			// is it really in the keystore as well
+			is = new java.io.FileInputStream(org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PATH);
+			store.load(is, org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PASS);
+			is.close();
+			cert = ((java.security.cert.X509Certificate) (store.getCertificate(alias)));
+			org.junit.Assert.assertNotNull(cert);
+			org.junit.Assert.assertEquals(java.math.BigInteger.valueOf(0x4afb9c19), cert.getSerialNumber());
+			javax.security.auth.x500.X500Principal issuer = cert.getIssuerX500Principal();
+			java.lang.String rfcNames = issuer.getName();
+			org.junit.Assert.assertEquals("CN=kura", rfcNames);
+			// delete the certificate
+			svc.deleteTrustCertificate(alias);
+			// does service stil return the deleted cert?
+			tcs = svc.getTrustCertificates();
+			org.junit.Assert.assertEquals(0, tcs.length);
+			// is it really not in the keystore enymore
+			is = new java.io.FileInputStream(org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PATH);
+			store.load(is, org.eclipse.kura.core.ssl.SslManagerServiceImplTest.KEY_STORE_PASS);
+			is.close();
+			org.junit.Assert.assertFalse(store.isCertificateEntry(alias));
+		}
     }
 }

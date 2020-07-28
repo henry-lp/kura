@@ -1390,33 +1390,26 @@ public class ConfigurationServiceTest {
         File f1 = new File(dir, "snapshot_" + snapshotID + ".xml");
         f1.createNewFile();
         f1.deleteOnExit();
-
-        FileWriter fw = new FileWriter(f1);
-        fw.append("test");
-        fw.close();
-
-        CryptoService cryptoServiceMock = mock(CryptoService.class);
-        cs.setCryptoService(cryptoServiceMock);
-
-        // ensure the proper file is read
-        when(cryptoServiceMock.decryptAes("test".toCharArray())).thenReturn(decrypted.toCharArray());
-
-        XmlComponentConfigurations configurations = cs.loadEncryptedSnapshotFileContent(snapshotID);
-
-        verify(systemServiceMock, times(1)).getKuraSnapshotsDirectory();
-        verify(cryptoServiceMock, times(1)).decryptAes("test".toCharArray());
-
-        f1.delete();
-        d1.delete();
-
-        assertNotNull("configurations object is returned", configurations);
-        assertNotNull("configurations list is returned", configurations.getConfigurations());
-        assertEquals("configurations list is not empty", 1, configurations.getConfigurations().size());
-
-        ComponentConfiguration cfg1 = configurations.getConfigurations().get(0);
-        assertEquals("correct snapshot", "123", cfg1.getPid());
-        assertNotNull("configuration properties map is returned", cfg1.getConfigurationProperties());
-        assertEquals("configuration properties map is not empty", 1, cfg1.getConfigurationProperties().size());
+		try (java.io.FileWriter fw = new java.io.FileWriter(f1)) {
+			fw.append("test");
+			fw.close();
+			org.eclipse.kura.crypto.CryptoService cryptoServiceMock = Mockito.mock(org.eclipse.kura.crypto.CryptoService.class);
+			cs.setCryptoService(cryptoServiceMock);
+			// ensure the proper file is read
+			Mockito.when(cryptoServiceMock.decryptAes("test".toCharArray())).thenReturn(decrypted.toCharArray());
+			org.eclipse.kura.core.configuration.XmlComponentConfigurations configurations = cs.loadEncryptedSnapshotFileContent(snapshotID);
+			Mockito.verify(systemServiceMock, Mockito.times(1)).getKuraSnapshotsDirectory();
+			Mockito.verify(cryptoServiceMock, Mockito.times(1)).decryptAes("test".toCharArray());
+			f1.delete();
+			d1.delete();
+			org.junit.Assert.assertNotNull("configurations object is returned", configurations);
+			org.junit.Assert.assertNotNull("configurations list is returned", configurations.getConfigurations());
+			org.junit.Assert.assertEquals("configurations list is not empty", 1, configurations.getConfigurations().size());
+			org.eclipse.kura.configuration.ComponentConfiguration cfg1 = configurations.getConfigurations().get(0);
+			org.junit.Assert.assertEquals("correct snapshot", "123", cfg1.getPid());
+			org.junit.Assert.assertNotNull("configuration properties map is returned", cfg1.getConfigurationProperties());
+			org.junit.Assert.assertEquals("configuration properties map is not empty", 1, cfg1.getConfigurationProperties().size());
+		}
     }
 
     @Test
@@ -1639,66 +1632,54 @@ public class ConfigurationServiceTest {
         File f1 = new File(dir, "snapshot_223.xml");
         f1.createNewFile();
         f1.deleteOnExit();
+		try (java.io.FileWriter fw = new java.io.FileWriter(f1)) {
+			fw.append(cfgxml);
+			fw.close();
+			org.eclipse.kura.core.configuration.ConfigurationServiceImpl cs = new org.eclipse.kura.core.configuration.ConfigurationServiceImpl() {
+				@java.lang.Override
+				public java.util.Set<java.lang.Long> getSnapshots() throws org.eclipse.kura.KuraException {
+					return snapshotList;
+				}
 
-        FileWriter fw = new FileWriter(f1);
-        fw.append(cfgxml);
-        fw.close();
+				@java.lang.Override
+				java.lang.String getSnapshotsDirectory() {
+					return dir;
+				}
 
-        ConfigurationServiceImpl cs = new ConfigurationServiceImpl() {
+				@java.lang.Override
+				protected <T> T unmarshal(java.lang.String xmlString, java.lang.Class<T> clazz) throws org.eclipse.kura.KuraException {
+					org.eclipse.kura.internal.xml.marshaller.unmarshaller.XmlMarshallUnmarshallImpl xmlMarshaller = new org.eclipse.kura.internal.xml.marshaller.unmarshaller.XmlMarshallUnmarshallImpl();
+					return xmlMarshaller.unmarshal(xmlString, clazz);
+				}
 
-            @Override
-            public Set<Long> getSnapshots() throws KuraException {
-                return snapshotList;
-            }
-
-            @Override
-            String getSnapshotsDirectory() {
-                return dir;
-            }
-
-            @Override
-            protected <T> T unmarshal(String xmlString, Class<T> clazz) throws KuraException {
-                XmlMarshallUnmarshallImpl xmlMarshaller = new XmlMarshallUnmarshallImpl();
-
-                return xmlMarshaller.unmarshal(xmlString, clazz);
-            }
-
-            @Override
-            protected String marshal(Object object) {
-                XmlMarshallUnmarshallImpl xmlMarshaller = new XmlMarshallUnmarshallImpl();
-                try {
-                    return xmlMarshaller.marshal(object);
-                } catch (KuraException e) {
-
-                }
-                return null;
-            }
-        };
-
-        CryptoService cryptoServiceMock = mock(CryptoService.class);
-        cs.setCryptoService(cryptoServiceMock);
-
-        String encCfg = "encrypted";
-        char[] encrypted = encCfg.toCharArray();
-        when(cryptoServiceMock.encryptAes((char[]) Matchers.anyObject())).thenReturn(encrypted);
-
-        BundleContext bundleContext = mock(BundleContext.class);
-        TestUtil.setFieldValue(cs, "bundleContext", bundleContext);
-
-        TestUtil.invokePrivate(cs, "encryptPlainSnapshots");
-
-        verify(cryptoServiceMock, times(1)).encryptAes((char[]) Matchers.anyObject());
-
-        FileReader fr = new FileReader(f1);
-        char[] chars = new char[encCfg.length()];
-        int read = fr.read(chars);
-        fr.close();
-
-        assertEquals("proper length", encCfg.length(), read);
-        assertArrayEquals("proper encrypted contents", encrypted, chars);
-
-        f1.delete();
-        d1.delete();
+				@java.lang.Override
+				protected java.lang.String marshal(java.lang.Object object) {
+					org.eclipse.kura.internal.xml.marshaller.unmarshaller.XmlMarshallUnmarshallImpl xmlMarshaller = new org.eclipse.kura.internal.xml.marshaller.unmarshaller.XmlMarshallUnmarshallImpl();
+					try {
+						return xmlMarshaller.marshal(object);
+					} catch (org.eclipse.kura.KuraException e) {
+					}
+					return null;
+				}
+			};
+			org.eclipse.kura.crypto.CryptoService cryptoServiceMock = Mockito.mock(org.eclipse.kura.crypto.CryptoService.class);
+			cs.setCryptoService(cryptoServiceMock);
+			java.lang.String encCfg = "encrypted";
+			char[] encrypted = encCfg.toCharArray();
+			Mockito.when(cryptoServiceMock.encryptAes(((char[]) (org.mockito.Matchers.anyObject())))).thenReturn(encrypted);
+			org.osgi.framework.BundleContext bundleContext = Mockito.mock(org.osgi.framework.BundleContext.class);
+			org.eclipse.kura.core.testutil.TestUtil.setFieldValue(cs, "bundleContext", bundleContext);
+			org.eclipse.kura.core.testutil.TestUtil.invokePrivate(cs, "encryptPlainSnapshots");
+			Mockito.verify(cryptoServiceMock, Mockito.times(1)).encryptAes(((char[]) (org.mockito.Matchers.anyObject())));
+			java.io.FileReader fr = new java.io.FileReader(f1);
+			char[] chars = new char[encCfg.length()];
+			int read = fr.read(chars);
+			fr.close();
+			org.junit.Assert.assertEquals("proper length", encCfg.length(), read);
+			org.junit.Assert.assertArrayEquals("proper encrypted contents", encrypted, chars);
+			f1.delete();
+			d1.delete();
+		}
     }
 
     private String prepareSnapshotXml(final XmlComponentConfigurations configs) throws KuraException {
@@ -1850,18 +1831,16 @@ public class ConfigurationServiceTest {
 
         File f1 = new File(d1, "snapshot_" + sid + ".xml");
         f1.deleteOnExit();
-        assertTrue("snapshot file was created", f1.exists());
-
-        FileReader fr = new FileReader(f1);
-        char[] chars = new char[encCfg.length()];
-        int read = fr.read(chars);
-        fr.close();
-
-        assertEquals("proper length", encCfg.length(), read);
-        assertArrayEquals("proper encrypted contents", encrypted, chars);
-
-        f1.delete();
-        d1.delete();
+        org.junit.Assert.assertTrue("snapshot file was created", f1.exists());
+		try (java.io.FileReader fr = new java.io.FileReader(f1)) {
+			char[] chars = new char[encCfg.length()];
+			int read = fr.read(chars);
+			fr.close();
+			org.junit.Assert.assertEquals("proper length", encCfg.length(), read);
+			org.junit.Assert.assertArrayEquals("proper encrypted contents", encrypted, chars);
+			f1.delete();
+			d1.delete();
+		}
     }
 
     @Test
@@ -2150,20 +2129,18 @@ public class ConfigurationServiceTest {
         verify(cryptoServiceMock, times(1)).encryptAes((char[]) Matchers.anyObject());
         verify(systemServiceMock, times(1)).getKuraSnapshotsCount();
 
-        assertNotNull(sid);
+        org.junit.Assert.assertNotNull(sid);
 
         File f1 = new File(d1, "snapshot_" + sid + ".xml");
-        assertTrue("snapshot file created", f1.exists());
-
-        FileReader fr = new FileReader(f1);
-        char[] chars = new char[encCfg.length()];
-        fr.read(chars);
-        fr.close();
-
-        assertArrayEquals("snapshot file content matches", encCfg.toCharArray(), chars);
-
-        f1.delete();
-        d1.delete();
+        org.junit.Assert.assertTrue("snapshot file created", f1.exists());
+		try (java.io.FileReader fr = new java.io.FileReader(f1)) {
+			char[] chars = new char[encCfg.length()];
+			fr.read(chars);
+			fr.close();
+			org.junit.Assert.assertArrayEquals("snapshot file content matches", encCfg.toCharArray(), chars);
+			f1.delete();
+			d1.delete();
+		}
     }
 
     @Test
@@ -2234,21 +2211,19 @@ public class ConfigurationServiceTest {
         verify(cryptoServiceMock, times(1)).encryptAes((char[]) Matchers.anyObject());
         verify(systemServiceMock, times(1)).getKuraSnapshotsCount();
 
-        assertNotNull(sid);
-        assertEquals("sid as expected", lastSid + 1, sid.longValue());
+        org.junit.Assert.assertNotNull(sid);
+        org.junit.Assert.assertEquals("sid as expected", lastSid + 1, sid.longValue());
 
         File f1 = new File(d1, "snapshot_" + sid + ".xml");
-        assertTrue("snapshot file created", f1.exists());
-
-        FileReader fr = new FileReader(f1);
-        char[] chars = new char[encCfg.length()];
-        fr.read(chars);
-        fr.close();
-
-        assertArrayEquals("snapshot file content matches", encCfg.toCharArray(), chars);
-
-        f1.delete();
-        d1.delete();
+        org.junit.Assert.assertTrue("snapshot file created", f1.exists());
+		try (java.io.FileReader fr = new java.io.FileReader(f1)) {
+			char[] chars = new char[encCfg.length()];
+			fr.read(chars);
+			fr.close();
+			org.junit.Assert.assertArrayEquals("snapshot file content matches", encCfg.toCharArray(), chars);
+			f1.delete();
+			d1.delete();
+		}
     }
 
     @Test
@@ -2316,22 +2291,20 @@ public class ConfigurationServiceTest {
         verify(cryptoServiceMock, times(1)).encryptAes((char[]) Matchers.anyObject());
         verify(systemServiceMock, times(1)).getKuraSnapshotsCount();
 
-        assertNotNull(sid);
-        assertTrue("Expected higher sid", sid.longValue() > lastSid + 1);
-        assertTrue("Expected sid <= current time", sid.longValue() <= System.currentTimeMillis());
+        org.junit.Assert.assertNotNull(sid);
+        org.junit.Assert.assertTrue("Expected higher sid", sid.longValue() > lastSid + 1);
+        org.junit.Assert.assertTrue("Expected sid <= current time", sid.longValue() <= System.currentTimeMillis());
 
         File f1 = new File(d1, "snapshot_" + sid + ".xml");
-        assertTrue("Expected snapshot file to be created", f1.exists());
-
-        FileReader fr = new FileReader(f1);
-        char[] chars = new char[encCfg.length()];
-        fr.read(chars);
-        fr.close();
-
-        assertArrayEquals("Expected snapshot file content to match", encCfg.toCharArray(), chars);
-
-        f1.delete();
-        d1.delete();
+        org.junit.Assert.assertTrue("Expected snapshot file to be created", f1.exists());
+		try (java.io.FileReader fr = new java.io.FileReader(f1)) {
+			char[] chars = new char[encCfg.length()];
+			fr.read(chars);
+			fr.close();
+			org.junit.Assert.assertArrayEquals("Expected snapshot file content to match", encCfg.toCharArray(), chars);
+			f1.delete();
+			d1.delete();
+		}
     }
 
     @Test
@@ -2889,67 +2862,47 @@ public class ConfigurationServiceTest {
         File f1 = new File(dir, "snapshot_" + id + ".xml");
         f1.createNewFile();
         f1.deleteOnExit();
-
-        FileWriter fw = new FileWriter(f1);
-        fw.append("test");
-        fw.close();
-
-        CryptoService cryptoServiceMock = mock(CryptoService.class);
-        cs.setCryptoService(cryptoServiceMock);
-
-        String decrypted = prepareSnapshotXML();
-        when(cryptoServiceMock.decryptAes("test".toCharArray())).thenReturn(decrypted.toCharArray());
-
-        when(cryptoServiceMock.encryptAes((char[]) anyObject())).thenReturn("encrypted".toCharArray());
-
-        SystemService systemServiceMock = mock(SystemService.class);
-        cs.setSystemService(systemServiceMock);
-
-        when(systemServiceMock.getKuraSnapshotsCount()).thenReturn(5);
-
-        String pid = "pid";
-        Set<String> allPids = (Set<String>) TestUtil.getFieldValue(cs, "allActivatedPids");
-        allPids.add(pid);
-
-        ComponentContext componentCtxMock = mock(ComponentContext.class);
-        TestUtil.setFieldValue(cs, "ctx", componentCtxMock);
-
-        BundleContext bundleCtxMock = mock(BundleContext.class);
-        when(componentCtxMock.getBundleContext()).thenReturn(bundleCtxMock);
-
-        when(bundleCtxMock.getServiceReferences((String) null, null))
-                .thenThrow(new InvalidSyntaxException("test", null));
-
-        cs.rollback(id);
-
-        verify(cryptoServiceMock, times(1)).decryptAes("test".toCharArray());
-        verify(cryptoServiceMock, times(1)).encryptAes((char[]) anyObject());
-        verify(systemServiceMock, times(1)).getKuraSnapshotsCount();
-
-        File[] files = d1.listFiles();
-
-        assertEquals(2, files.length);
-
-        for (File f : files) {
-            f.deleteOnExit();
-        }
-        String expect = "test";
-
-        FileReader fr = new FileReader(files[0]);
-        char[] chars = new char[expect.length()];
-        fr.read(chars);
-        fr.close();
-
-        assertEquals(expect, new String(chars));
-
-        expect = "encrypted";
-
-        fr = new FileReader(files[1]);
-        chars = new char[expect.length()];
-        fr.read(chars);
-        fr.close();
-
-        assertEquals(expect, new String(chars));
+		try (java.io.FileWriter fw = new java.io.FileWriter(f1)) {
+			fw.append("test");
+			fw.close();
+			org.eclipse.kura.crypto.CryptoService cryptoServiceMock = Mockito.mock(org.eclipse.kura.crypto.CryptoService.class);
+			cs.setCryptoService(cryptoServiceMock);
+			java.lang.String decrypted = prepareSnapshotXML();
+			Mockito.when(cryptoServiceMock.decryptAes("test".toCharArray())).thenReturn(decrypted.toCharArray());
+			Mockito.when(cryptoServiceMock.encryptAes(((char[]) (Matchers.anyObject())))).thenReturn("encrypted".toCharArray());
+			org.eclipse.kura.system.SystemService systemServiceMock = Mockito.mock(org.eclipse.kura.system.SystemService.class);
+			cs.setSystemService(systemServiceMock);
+			Mockito.when(systemServiceMock.getKuraSnapshotsCount()).thenReturn(5);
+			java.lang.String pid = "pid";
+			java.util.Set<java.lang.String> allPids = ((java.util.Set<java.lang.String>) (org.eclipse.kura.core.testutil.TestUtil.getFieldValue(cs, "allActivatedPids")));
+			allPids.add(pid);
+			org.osgi.service.component.ComponentContext componentCtxMock = Mockito.mock(org.osgi.service.component.ComponentContext.class);
+			org.eclipse.kura.core.testutil.TestUtil.setFieldValue(cs, "ctx", componentCtxMock);
+			org.osgi.framework.BundleContext bundleCtxMock = Mockito.mock(org.osgi.framework.BundleContext.class);
+			Mockito.when(componentCtxMock.getBundleContext()).thenReturn(bundleCtxMock);
+			Mockito.when(bundleCtxMock.getServiceReferences(((java.lang.String) (null)), null)).thenThrow(new org.osgi.framework.InvalidSyntaxException("test", null));
+			cs.rollback(id);
+			Mockito.verify(cryptoServiceMock, Mockito.times(1)).decryptAes("test".toCharArray());
+			Mockito.verify(cryptoServiceMock, Mockito.times(1)).encryptAes(((char[]) (Matchers.anyObject())));
+			Mockito.verify(systemServiceMock, Mockito.times(1)).getKuraSnapshotsCount();
+			java.io.File[] files = d1.listFiles();
+			org.junit.Assert.assertEquals(2, files.length);
+			for (java.io.File f : files) {
+				f.deleteOnExit();
+			}
+			java.lang.String expect = "test";
+			java.io.FileReader fr = new java.io.FileReader(files[0]);
+			char[] chars = new char[expect.length()];
+			fr.read(chars);
+			fr.close();
+			org.junit.Assert.assertEquals(expect, new java.lang.String(chars));
+			expect = "encrypted";
+			fr = new java.io.FileReader(files[1]);
+			chars = new char[expect.length()];
+			fr.read(chars);
+			fr.close();
+			org.junit.Assert.assertEquals(expect, new java.lang.String(chars));
+		}
     }
 
     @Test
@@ -2990,79 +2943,60 @@ public class ConfigurationServiceTest {
         File f1 = new File(dir, "snapshot_" + id + ".xml");
         f1.createNewFile();
         f1.deleteOnExit();
+		try (java.io.FileWriter fw = new java.io.FileWriter(f1)) {
+			fw.append("test");
+			fw.close();
+			org.eclipse.kura.crypto.CryptoService cryptoServiceMock = Mockito.mock(org.eclipse.kura.crypto.CryptoService.class);
+			cs.setCryptoService(cryptoServiceMock);
+			java.lang.String decrypted = prepareSnapshotXML();
+			Mockito.when(cryptoServiceMock.decryptAes("test".toCharArray())).thenReturn(decrypted.toCharArray());
+			Mockito.when(cryptoServiceMock.encryptAes(((char[]) (Matchers.anyObject())))).thenReturn("encrypted".toCharArray());
+			org.eclipse.kura.system.SystemService systemServiceMock = Mockito.mock(org.eclipse.kura.system.SystemService.class);
+			cs.setSystemService(systemServiceMock);
+			Mockito.when(systemServiceMock.getKuraSnapshotsCount()).thenReturn(5);
+			java.lang.String pid = "pid";
+			java.util.Set<java.lang.String> allPids = ((java.util.Set<java.lang.String>) (org.eclipse.kura.core.testutil.TestUtil.getFieldValue(cs, "allActivatedPids")));
+			allPids.add(pid);
+			java.util.Map<java.lang.String, java.lang.String> factoryPidByPid = new java.util.HashMap<>();// will cause exception in deleteFactoryConfiguration
 
-        FileWriter fw = new FileWriter(f1);
-        fw.append("test");
-        fw.close();
+			factoryPidByPid.put("key", null);
+			org.eclipse.kura.core.testutil.TestUtil.setFieldValue(cs, "factoryPidByPid", factoryPidByPid);
+			java.util.Map<java.lang.String, org.eclipse.kura.core.configuration.metatype.Tocd> ocds = new java.util.HashMap<>();// for getRegisteredOCD in rollbackConfigurationInternal
 
-        CryptoService cryptoServiceMock = mock(CryptoService.class);
-        cs.setCryptoService(cryptoServiceMock);
-
-        String decrypted = prepareSnapshotXML();
-        when(cryptoServiceMock.decryptAes("test".toCharArray())).thenReturn(decrypted.toCharArray());
-
-        when(cryptoServiceMock.encryptAes((char[]) anyObject())).thenReturn("encrypted".toCharArray());
-
-        SystemService systemServiceMock = mock(SystemService.class);
-        cs.setSystemService(systemServiceMock);
-
-        when(systemServiceMock.getKuraSnapshotsCount()).thenReturn(5);
-
-        String pid = "pid";
-        Set<String> allPids = (Set<String>) TestUtil.getFieldValue(cs, "allActivatedPids");
-        allPids.add(pid);
-
-        Map<String, String> factoryPidByPid = new HashMap<>(); // will cause exception in deleteFactoryConfiguration
-        factoryPidByPid.put("key", null);
-        TestUtil.setFieldValue(cs, "factoryPidByPid", factoryPidByPid);
-
-        Map<String, Tocd> ocds = new HashMap<>(); // for getRegisteredOCD in rollbackConfigurationInternal
-        Tocd ocd = new Tocd();
-        ocds.put(pid, ocd);
-        TestUtil.setFieldValue(cs, "ocds", ocds);
-
-        ComponentContext componentCtxMock = mock(ComponentContext.class);
-        TestUtil.setFieldValue(cs, "ctx", componentCtxMock);
-
-        BundleContext bundleCtxMock = mock(BundleContext.class);
-        when(componentCtxMock.getBundleContext()).thenReturn(bundleCtxMock);
-
-        ServiceReference svcRefMock = mock(ServiceReference.class);
-        ServiceReference[] svcReferences = { svcRefMock };
-        when(bundleCtxMock.getServiceReferences((String) null, null)).thenReturn(svcReferences);
-
-        String ppid = pid;
-        when(svcRefMock.getProperty(Constants.SERVICE_PID)).thenReturn(ppid);
-
-        Bundle bundleMock = mock(Bundle.class);
-        when(svcRefMock.getBundle()).thenReturn(bundleMock);
-
-        when(bundleMock.getResource(Matchers.anyString())).thenThrow(new NullPointerException("test"));
-
-        try {
-            cs.rollback(id);
-            fail("Rigged for exception.");
-        } catch (KuraPartialSuccessException e) {
-            // OK
-        }
-
-        verify(cryptoServiceMock, times(1)).decryptAes("test".toCharArray());
-
-        File[] files = d1.listFiles();
-
-        assertEquals(1, files.length);
-
-        for (File f : files) {
-            f.deleteOnExit();
-        }
-        String expect = "test";
-
-        FileReader fr = new FileReader(files[0]);
-        char[] chars = new char[expect.length()];
-        fr.read(chars);
-        fr.close();
-
-        assertEquals(expect, new String(chars));
+			org.eclipse.kura.core.configuration.metatype.Tocd ocd = new org.eclipse.kura.core.configuration.metatype.Tocd();
+			ocds.put(pid, ocd);
+			org.eclipse.kura.core.testutil.TestUtil.setFieldValue(cs, "ocds", ocds);
+			org.osgi.service.component.ComponentContext componentCtxMock = Mockito.mock(org.osgi.service.component.ComponentContext.class);
+			org.eclipse.kura.core.testutil.TestUtil.setFieldValue(cs, "ctx", componentCtxMock);
+			org.osgi.framework.BundleContext bundleCtxMock = Mockito.mock(org.osgi.framework.BundleContext.class);
+			Mockito.when(componentCtxMock.getBundleContext()).thenReturn(bundleCtxMock);
+			org.osgi.framework.ServiceReference svcRefMock = Mockito.mock(org.osgi.framework.ServiceReference.class);
+			org.osgi.framework.ServiceReference[] svcReferences = new org.osgi.framework.ServiceReference[]{ svcRefMock };
+			Mockito.when(bundleCtxMock.getServiceReferences(((java.lang.String) (null)), null)).thenReturn(svcReferences);
+			java.lang.String ppid = pid;
+			Mockito.when(svcRefMock.getProperty(Constants.SERVICE_PID)).thenReturn(ppid);
+			org.osgi.framework.Bundle bundleMock = Mockito.mock(org.osgi.framework.Bundle.class);
+			Mockito.when(svcRefMock.getBundle()).thenReturn(bundleMock);
+			Mockito.when(bundleMock.getResource(org.mockito.Matchers.anyString())).thenThrow(new java.lang.NullPointerException("test"));
+			try {
+				cs.rollback(id);
+				org.junit.Assert.fail("Rigged for exception.");
+			} catch (org.eclipse.kura.KuraPartialSuccessException e) {
+				// OK
+			}
+			Mockito.verify(cryptoServiceMock, Mockito.times(1)).decryptAes("test".toCharArray());
+			java.io.File[] files = d1.listFiles();
+			org.junit.Assert.assertEquals(1, files.length);
+			for (java.io.File f : files) {
+				f.deleteOnExit();
+			}
+			java.lang.String expect = "test";
+			java.io.FileReader fr = new java.io.FileReader(files[0]);
+			char[] chars = new char[expect.length()];
+			fr.read(chars);
+			fr.close();
+			org.junit.Assert.assertEquals(expect, new java.lang.String(chars));
+		}
     }
 
     public void testRollbackId() throws Exception {
@@ -3084,76 +3018,54 @@ public class ConfigurationServiceTest {
         File f1 = new File(dir, "snapshot_" + id + ".xml");
         f1.createNewFile();
         f1.deleteOnExit();
-
-        FileWriter fw = new FileWriter(f1);
-        fw.append("test");
-        fw.close();
-
-        CryptoService cryptoServiceMock = mock(CryptoService.class);
-        cs.setCryptoService(cryptoServiceMock);
-
-        String decrypted = prepareSnapshotXML();
-        when(cryptoServiceMock.decryptAes("test".toCharArray())).thenReturn(decrypted.toCharArray());
-
-        when(cryptoServiceMock.encryptAes((char[]) anyObject())).thenReturn("encrypted".toCharArray());
-
-        SystemService systemServiceMock = mock(SystemService.class);
-        cs.setSystemService(systemServiceMock);
-
-        when(systemServiceMock.getKuraSnapshotsCount()).thenReturn(5);
-
-        String pid = "pid";
-        Set<String> allPids = (Set<String>) TestUtil.getFieldValue(cs, "allActivatedPids");
-        allPids.add(pid);
-
-        ComponentContext componentCtxMock = mock(ComponentContext.class);
-        TestUtil.setFieldValue(cs, "ctx", componentCtxMock);
-
-        BundleContext bundleCtxMock = mock(BundleContext.class);
-        when(componentCtxMock.getBundleContext()).thenReturn(bundleCtxMock);
-
-        ServiceReference svcRefMock = mock(ServiceReference.class);
-        ServiceReference[] svcReferences = { svcRefMock };
-        when(bundleCtxMock.getServiceReferences((String) null, null)).thenReturn(svcReferences);
-
-        String ppid = pid;
-        when(svcRefMock.getProperty(Constants.SERVICE_PID)).thenReturn(ppid);
-
-        Bundle bundleMock = mock(Bundle.class);
-        when(svcRefMock.getBundle()).thenReturn(bundleMock);
-
-        when(bundleMock.getResource(Matchers.anyString())).thenReturn(null);
-
-        cs.rollback(id);
-
-        verify(cryptoServiceMock, times(1)).decryptAes("test".toCharArray());
-        verify(cryptoServiceMock, times(1)).encryptAes((char[]) anyObject());
-        verify(systemServiceMock, times(1)).getKuraSnapshotsCount();
-
-        File[] files = d1.listFiles();
-
-        assertEquals(2, files.length);
-
-        for (File f : files) {
-            f.deleteOnExit();
-        }
-        String expect = "test";
-
-        FileReader fr = new FileReader(files[0]);
-        char[] chars = new char[expect.length()];
-        fr.read(chars);
-        fr.close();
-
-        assertEquals(expect, new String(chars));
-
-        expect = "encrypted";
-
-        fr = new FileReader(files[1]);
-        chars = new char[expect.length()];
-        fr.read(chars);
-        fr.close();
-
-        assertEquals(expect, new String(chars));
+		try (java.io.FileWriter fw = new java.io.FileWriter(f1)) {
+			fw.append("test");
+			fw.close();
+			org.eclipse.kura.crypto.CryptoService cryptoServiceMock = Mockito.mock(org.eclipse.kura.crypto.CryptoService.class);
+			cs.setCryptoService(cryptoServiceMock);
+			java.lang.String decrypted = prepareSnapshotXML();
+			Mockito.when(cryptoServiceMock.decryptAes("test".toCharArray())).thenReturn(decrypted.toCharArray());
+			Mockito.when(cryptoServiceMock.encryptAes(((char[]) (Matchers.anyObject())))).thenReturn("encrypted".toCharArray());
+			org.eclipse.kura.system.SystemService systemServiceMock = Mockito.mock(org.eclipse.kura.system.SystemService.class);
+			cs.setSystemService(systemServiceMock);
+			Mockito.when(systemServiceMock.getKuraSnapshotsCount()).thenReturn(5);
+			java.lang.String pid = "pid";
+			java.util.Set<java.lang.String> allPids = ((java.util.Set<java.lang.String>) (org.eclipse.kura.core.testutil.TestUtil.getFieldValue(cs, "allActivatedPids")));
+			allPids.add(pid);
+			org.osgi.service.component.ComponentContext componentCtxMock = Mockito.mock(org.osgi.service.component.ComponentContext.class);
+			org.eclipse.kura.core.testutil.TestUtil.setFieldValue(cs, "ctx", componentCtxMock);
+			org.osgi.framework.BundleContext bundleCtxMock = Mockito.mock(org.osgi.framework.BundleContext.class);
+			Mockito.when(componentCtxMock.getBundleContext()).thenReturn(bundleCtxMock);
+			org.osgi.framework.ServiceReference svcRefMock = Mockito.mock(org.osgi.framework.ServiceReference.class);
+			org.osgi.framework.ServiceReference[] svcReferences = new org.osgi.framework.ServiceReference[]{ svcRefMock };
+			Mockito.when(bundleCtxMock.getServiceReferences(((java.lang.String) (null)), null)).thenReturn(svcReferences);
+			java.lang.String ppid = pid;
+			Mockito.when(svcRefMock.getProperty(Constants.SERVICE_PID)).thenReturn(ppid);
+			org.osgi.framework.Bundle bundleMock = Mockito.mock(org.osgi.framework.Bundle.class);
+			Mockito.when(svcRefMock.getBundle()).thenReturn(bundleMock);
+			Mockito.when(bundleMock.getResource(org.mockito.Matchers.anyString())).thenReturn(null);
+			cs.rollback(id);
+			Mockito.verify(cryptoServiceMock, Mockito.times(1)).decryptAes("test".toCharArray());
+			Mockito.verify(cryptoServiceMock, Mockito.times(1)).encryptAes(((char[]) (Matchers.anyObject())));
+			Mockito.verify(systemServiceMock, Mockito.times(1)).getKuraSnapshotsCount();
+			java.io.File[] files = d1.listFiles();
+			org.junit.Assert.assertEquals(2, files.length);
+			for (java.io.File f : files) {
+				f.deleteOnExit();
+			}
+			java.lang.String expect = "test";
+			java.io.FileReader fr = new java.io.FileReader(files[0]);
+			char[] chars = new char[expect.length()];
+			fr.read(chars);
+			fr.close();
+			org.junit.Assert.assertEquals(expect, new java.lang.String(chars));
+			expect = "encrypted";
+			fr = new java.io.FileReader(files[1]);
+			chars = new char[expect.length()];
+			fr.read(chars);
+			fr.close();
+			org.junit.Assert.assertEquals(expect, new java.lang.String(chars));
+		}
     }
 
     private ComponentDescriptionDTO createMockComponent(final String pid, final String... implementedServices) {

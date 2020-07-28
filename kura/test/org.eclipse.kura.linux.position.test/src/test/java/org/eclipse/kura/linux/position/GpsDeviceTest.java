@@ -146,25 +146,19 @@ public class GpsDeviceTest implements GpsDevice.Listener {
                 + "$GPRMC,121041.000,A,4655.3772,N,01513.6390,E,0.31,319.55,220517,,*7\n"
                 + "$GNVTG,,,,,,,12.34,,,,*4a\n" + "$GNTXT,some text with failing checksum,*4a\n"
                 + "$GNTXT,some text with proper checksum,*5d\n" + "$HNINV,invalid,*26\n";
-        @SuppressWarnings("resource")
-        InputStream is = new SequenceInputStream(new ByteArrayInputStream(nmeaStr.getBytes()),
-                new BlockingSerialPortInputStream());
-
-        CommConnection connMock = mock(CommConnection.class);
-        when(connMock.openInputStream()).thenReturn(is);
-
-        ConnectionFactory connFactoryMock = mock(ConnectionFactory.class);
-        when(connFactoryMock.createConnection(anyString(), eq(1), eq(false))).thenReturn(connMock);
-
-        gps = new GpsDevice(connFactoryMock, commUri, this);
-
-        latch.await(1, TimeUnit.SECONDS);
-
-        gps.disconnect();
-
-        for (int i = visits.length - 1; i >= 0; i--) {
-            assertTrue("Sentence " + i, visits[i]);
-        }
+		try (@java.lang.SuppressWarnings("resource")
+		java.io.InputStream is = new java.io.SequenceInputStream(new java.io.ByteArrayInputStream(nmeaStr.getBytes()), new org.eclipse.kura.linux.position.GpsDeviceTest.BlockingSerialPortInputStream())) {
+			org.eclipse.kura.comm.CommConnection connMock = Mockito.mock(org.eclipse.kura.comm.CommConnection.class);
+			Mockito.when(connMock.openInputStream()).thenReturn(is);
+			org.osgi.service.io.ConnectionFactory connFactoryMock = Mockito.mock(org.osgi.service.io.ConnectionFactory.class);
+			Mockito.when(connFactoryMock.createConnection(Matchers.anyString(), Matchers.eq(1), Matchers.eq(false))).thenReturn(connMock);
+			gps = new org.eclipse.kura.linux.position.GpsDevice(connFactoryMock, commUri, this);
+			latch.await(1, java.util.concurrent.TimeUnit.SECONDS);
+			gps.disconnect();
+			for (int i = visits.length - 1; i >= 0; i--) {
+				org.junit.Assert.assertTrue("Sentence " + i, visits[i]);
+			}
+		}
     }
 
     @Override

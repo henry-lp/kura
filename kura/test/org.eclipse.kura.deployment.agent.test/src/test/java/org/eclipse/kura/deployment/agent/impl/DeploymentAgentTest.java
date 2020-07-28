@@ -309,16 +309,14 @@ public class DeploymentAgentTest {
 
         String dpaConfPath = "target/dpa.properties";
         TestUtil.setFieldValue(svc, "dpaConfPath", dpaConfPath);
-
-        FileWriter writer = new FileWriter(dpaConfPath);
-        writer.write("dp1=file:/tmp/testdp1.dp\ndp2=file:/tmp/testdp2.dp\n");
-        writer.close();
-
-        TestUtil.invokePrivate(svc, "installPackagesFromConfFile");
-
-        assertEquals(2, invoked.get());
-        assertTrue(paths.contains("file:/tmp/testdp1.dp"));
-        assertTrue(paths.contains("file:/tmp/testdp2.dp"));
+		try (java.io.FileWriter writer = new java.io.FileWriter(dpaConfPath)) {
+			writer.write("dp1=file:/tmp/testdp1.dp\ndp2=file:/tmp/testdp2.dp\n");
+			writer.close();
+			org.eclipse.kura.core.testutil.TestUtil.invokePrivate(svc, "installPackagesFromConfFile");
+			org.junit.Assert.assertEquals(2, invoked.get());
+			org.junit.Assert.assertTrue(paths.contains("file:/tmp/testdp1.dp"));
+			org.junit.Assert.assertTrue(paths.contains("file:/tmp/testdp2.dp"));
+		}
     }
 
     @Test
@@ -339,16 +337,14 @@ public class DeploymentAgentTest {
 
         String dpaConfPath = "target/dpa.properties";
         TestUtil.setFieldValue(svc, "dpaConfPath", dpaConfPath);
-
-        FileWriter writer = new FileWriter(dpaConfPath);
-        writer.write("dp1=file:/tmp/testdp1.dp\ndp2=file:/tmp/testdp2.dp\n");
-        writer.close();
-
-        TestUtil.invokePrivate(svc, "installPackagesFromConfFile");
-
-        assertEquals(2, invoked.get());
-        assertTrue(paths.contains("file:/tmp/testdp1.dp"));
-        assertTrue(paths.contains("file:/tmp/testdp2.dp"));
+		try (java.io.FileWriter writer = new java.io.FileWriter(dpaConfPath)) {
+			writer.write("dp1=file:/tmp/testdp1.dp\ndp2=file:/tmp/testdp2.dp\n");
+			writer.close();
+			org.eclipse.kura.core.testutil.TestUtil.invokePrivate(svc, "installPackagesFromConfFile");
+			org.junit.Assert.assertEquals(2, invoked.get());
+			org.junit.Assert.assertTrue(paths.contains("file:/tmp/testdp1.dp"));
+			org.junit.Assert.assertTrue(paths.contains("file:/tmp/testdp2.dp"));
+		}
     }
 
     @Test
@@ -380,20 +376,15 @@ public class DeploymentAgentTest {
         TestUtil.invokePrivate(svc, "installDeploymentPackageInternal", url);
 
         verify(daMock, times(1)).installDeploymentPackage(anyObject());
-
-        FileReader reader = new FileReader(dpaConfPath);
-        char[] buf = new char[200];
-        int read = reader.read(buf);
-        reader.close();
-
-        assertTrue(read > 0);
-        String str = new String(buf);
-
-        assertTrue("DP file location should have been added to config file",
-                str.contains("file\\:target/" + DP_NAME + "_" + VERSION_1_0_0 + ".dp")
-                        || str.contains("file\\:target\\\\" + DP_NAME + "_" + VERSION_1_0_0 + ".dp"));
-
-        assertTrue("DP file should have been copied", new File("target/" + DP_NAME + "_" + VERSION_1_0_0 + ".dp").exists());
+		try (java.io.FileReader reader = new java.io.FileReader(dpaConfPath)) {
+			char[] buf = new char[200];
+			int read = reader.read(buf);
+			reader.close();
+			org.junit.Assert.assertTrue(read > 0);
+			java.lang.String str = new java.lang.String(buf);
+			org.junit.Assert.assertTrue("DP file location should have been added to config file", str.contains(((("file\\:target/" + org.eclipse.kura.deployment.agent.impl.DeploymentAgentTest.DP_NAME) + "_") + org.eclipse.kura.deployment.agent.impl.DeploymentAgentTest.VERSION_1_0_0) + ".dp") || str.contains(((("file\\:target\\\\" + org.eclipse.kura.deployment.agent.impl.DeploymentAgentTest.DP_NAME) + "_") + org.eclipse.kura.deployment.agent.impl.DeploymentAgentTest.VERSION_1_0_0) + ".dp"));
+			org.junit.Assert.assertTrue("DP file should have been copied", new java.io.File(((("target/" + org.eclipse.kura.deployment.agent.impl.DeploymentAgentTest.DP_NAME) + "_") + org.eclipse.kura.deployment.agent.impl.DeploymentAgentTest.VERSION_1_0_0) + ".dp").exists());
+		}
     }
 
     @Test

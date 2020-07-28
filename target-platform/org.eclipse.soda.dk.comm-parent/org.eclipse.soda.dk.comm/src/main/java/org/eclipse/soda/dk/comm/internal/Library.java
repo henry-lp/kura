@@ -148,18 +148,19 @@ public class Library {
 	 * @throws IOException IOException.
 	 */
 	private static void unzipLib_http(final String javalibpath, final String libpath, final String libname, final String url) throws IOException {
-		ZipInputStream zipInput = new ZipInputStream(new URL(url).openStream());
-		while (zipInput.available() != 0) {
-			try {
-				if (zipInput.getNextEntry().getName().equals(libpath + libname)) {
-					BufferedInputStream input = new BufferedInputStream(zipInput);
-					BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(javalibpath + libname));
-					performUnzip(input, output);
+		try (java.util.zip.ZipInputStream zipInput = new java.util.zip.ZipInputStream(new java.net.URL(url).openStream())) {
+			while (zipInput.available() != 0) {
+				try {
+					if (zipInput.getNextEntry().getName().equals(libpath + libname)) {
+						java.io.BufferedInputStream input = new java.io.BufferedInputStream(zipInput);
+						java.io.BufferedOutputStream output = new java.io.BufferedOutputStream(new java.io.FileOutputStream(javalibpath + libname));
+						org.eclipse.soda.dk.comm.internal.Library.performUnzip(input, output);
+						break;
+					}
+				} catch (final java.lang.Exception e) {
 					break;
 				}
-			} catch (final Exception e) {
-				break;
-			}
+			} 
 		}
 	}
 
@@ -176,9 +177,10 @@ public class Library {
 	 * @throws IOException IOException.
 	 */
 	private static void unzipLib_local(final String javalibpath, final String libpath, final String libname, final String jarname) throws IOException {
-		ZipFile bundleJar = new ZipFile(jarname);
-		BufferedInputStream input = new BufferedInputStream(bundleJar.getInputStream(bundleJar.getEntry(libpath + libname)));
-		BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(javalibpath + libname));
-		performUnzip(input, output);
+		try (java.util.zip.ZipFile bundleJar = new java.util.zip.ZipFile(jarname)) {
+			java.io.BufferedInputStream input = new java.io.BufferedInputStream(bundleJar.getInputStream(bundleJar.getEntry(libpath + libname)));
+			java.io.BufferedOutputStream output = new java.io.BufferedOutputStream(new java.io.FileOutputStream(javalibpath + libname));
+			org.eclipse.soda.dk.comm.internal.Library.performUnzip(input, output);
+		}
 	}
 }

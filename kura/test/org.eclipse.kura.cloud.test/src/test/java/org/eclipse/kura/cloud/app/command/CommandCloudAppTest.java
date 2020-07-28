@@ -593,14 +593,12 @@ public class CommandCloudAppTest {
         f.createNewFile();
         f.setExecutable(true);
         f.deleteOnExit();
-
-        FileWriter fw = new FileWriter(f);
-        fw.write("sleep 1\necho OK");
-        fw.close();
-
-        String out = cca.execute(cmd, pass);
-
-        assertTrue(out.trim().endsWith("OK"));
+		try (java.io.FileWriter fw = new java.io.FileWriter(f)) {
+			fw.write("sleep 1\necho OK");
+			fw.close();
+			java.lang.String out = cca.execute(cmd, pass);
+			org.junit.Assert.assertTrue(out.trim().endsWith("OK"));
+		}
     }
 
     @Test
@@ -646,14 +644,12 @@ public class CommandCloudAppTest {
         f.createNewFile();
         f.setExecutable(true);
         f.deleteOnExit();
-
-        FileWriter fw = new FileWriter(f);
-        fw.write("echo NOK 1>&2\nsleep 2\necho OK");
-        fw.close();
-
-        String out = cca.execute(cmd, pass);
-
-        assertEquals("NOK", out.trim());
+		try (java.io.FileWriter fw = new java.io.FileWriter(f)) {
+			fw.write("echo NOK 1>&2\nsleep 2\necho OK");
+			fw.close();
+			java.lang.String out = cca.execute(cmd, pass);
+			org.junit.Assert.assertEquals("NOK", out.trim());
+		}
     }
 
     @Test(expected = KuraException.class)
@@ -760,18 +756,16 @@ public class CommandCloudAppTest {
         f.createNewFile();
         f.setExecutable(true);
         f.deleteOnExit();
+		try (java.io.FileWriter fw = new java.io.FileWriter(f)) {
+			fw.write("sleep 1\necho OK");
+			fw.close();
+			org.eclipse.kura.message.KuraPayload payload = new org.eclipse.kura.message.KuraPayload();
+			payload.addMetric("command.password", "pass");
+			payload.addMetric("command.command", cmd);
+			payload.setBody("zip".getBytes());// try unzip for good measure...
 
-        FileWriter fw = new FileWriter(f);
-        fw.write("sleep 1\necho OK");
-        fw.close();
-
-        KuraPayload payload = new KuraPayload();
-        payload.addMetric("command.password", "pass");
-        payload.addMetric("command.command", cmd);
-        payload.setBody("zip".getBytes()); // try unzip for good measure...
-
-        KuraPayload response = cca.execute(payload);
-
-        assertNotNull(response);
+			org.eclipse.kura.message.KuraPayload response = cca.execute(payload);
+			org.junit.Assert.assertNotNull(response);
+		}
     }
 }

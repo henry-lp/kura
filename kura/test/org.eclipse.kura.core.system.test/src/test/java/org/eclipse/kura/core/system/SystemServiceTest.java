@@ -274,12 +274,11 @@ public class SystemServiceTest {
         File file = new File(path);
         file.createNewFile();
         file.deleteOnExit();
-
-        FileWriter fw = new FileWriter(file);
-        fw.append(content);
-        fw.close();
-
-        return file;
+		try (java.io.FileWriter fw = new java.io.FileWriter(file)) {
+			fw.append(content);
+			fw.close();
+			return file;
+		}
     }
 
 }
