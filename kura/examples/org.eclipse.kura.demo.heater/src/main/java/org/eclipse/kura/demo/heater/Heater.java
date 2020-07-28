@@ -222,7 +222,7 @@ public class Heater implements ConfigurableComponent, CloudConnectionListener, C
         } else if (MODE_PROP_VACATION.equals(mode)) {
             setPoint = 6.0F;
         }
-        if (this.temperature + tempIncr < setPoint) {
+        if (((double) this.temperature + (double) tempIncr)  < setPoint) {
             this.temperature += tempIncr;
         } else {
             this.temperature -= 4 * tempIncr;

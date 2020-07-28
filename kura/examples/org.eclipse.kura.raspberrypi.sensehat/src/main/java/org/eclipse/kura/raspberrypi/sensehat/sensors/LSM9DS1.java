@@ -545,21 +545,21 @@ public class LSM9DS1 {
     private void calibrateAcceleration(float[] acc) {
 
         if (acc[0] >= 0.0) {
-            acc[0] = acc[0] / ACCEL_CAL_MAX_X;
+            acc[0] = (double) acc[0] / (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.ACCEL_CAL_MAX_X ;
         } else {
-            acc[0] = acc[0] / -ACCEL_CAL_MIN_X;
+            acc[0] = (double) acc[0] / (double) (-org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.ACCEL_CAL_MIN_X) ;
         }
 
         if (acc[1] >= 0.0) {
-            acc[1] = acc[1] / ACCEL_CAL_MAX_Y;
+            acc[1] = (double) acc[1] / (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.ACCEL_CAL_MAX_Y ;
         } else {
-            acc[1] = acc[1] / -ACCEL_CAL_MIN_Y;
+            acc[1] = (double) acc[1] / (double) (-org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.ACCEL_CAL_MIN_Y) ;
         }
 
         if (acc[2] >= 0.0) {
-            acc[2] = acc[2] / ACCEL_CAL_MAX_Z;
+            acc[2] = (double) acc[2] / (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.ACCEL_CAL_MAX_Z ;
         } else {
-            acc[2] = acc[2] / -ACCEL_CAL_MIN_Z;
+            acc[2] = (double) acc[2] / (double) (-org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.ACCEL_CAL_MIN_Z) ;
         }
 
     }
@@ -584,15 +584,15 @@ public class LSM9DS1 {
         if (accVectorLength < ACC_ZERO && gyroVectorLength < GYRO_ZERO) {
             // Correct the initial bias with real measures
             if (this.gyroSampleCount < 5 * gyroSampleRate) {
-                this.gyroBiasX = (1.0F - GYRO_LEARNING_ALPHA) * this.gyroBiasX + GYRO_LEARNING_ALPHA * gyro[0];
-                this.gyroBiasY = (1.0F - GYRO_LEARNING_ALPHA) * this.gyroBiasY + GYRO_LEARNING_ALPHA * gyro[1];
-                this.gyroBiasZ = (1.0F - GYRO_LEARNING_ALPHA) * this.gyroBiasZ + GYRO_LEARNING_ALPHA * gyro[2];
+                this.gyroBiasX = (((double) 1.0F - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_LEARNING_ALPHA) * this.gyroBiasX) + ((double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_LEARNING_ALPHA * (double) gyro[0]) ;
+                this.gyroBiasY = (((double) 1.0F - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_LEARNING_ALPHA) * this.gyroBiasY) + ((double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_LEARNING_ALPHA * (double) gyro[1]) ;
+                this.gyroBiasZ = (((double) 1.0F - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_LEARNING_ALPHA) * this.gyroBiasZ) + ((double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_LEARNING_ALPHA * (double) gyro[2]) ;
 
                 this.gyroSampleCount++;
             } else {
-                this.gyroBiasX = (1.0F - GYRO_CONTINIOUS_ALPHA) * this.gyroBiasX + GYRO_CONTINIOUS_ALPHA * gyro[0];
-                this.gyroBiasY = (1.0F - GYRO_CONTINIOUS_ALPHA) * this.gyroBiasY + GYRO_CONTINIOUS_ALPHA * gyro[1];
-                this.gyroBiasZ = (1.0F - GYRO_CONTINIOUS_ALPHA) * this.gyroBiasZ + GYRO_CONTINIOUS_ALPHA * gyro[2];
+                this.gyroBiasX = (((double) 1.0F - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_CONTINIOUS_ALPHA) * this.gyroBiasX) + ((double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_CONTINIOUS_ALPHA * (double) gyro[0]) ;
+                this.gyroBiasY = (((double) 1.0F - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_CONTINIOUS_ALPHA) * this.gyroBiasY) + ((double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_CONTINIOUS_ALPHA * (double) gyro[1]) ;
+                this.gyroBiasZ = (((double) 1.0F - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_CONTINIOUS_ALPHA) * this.gyroBiasZ) + ((double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.GYRO_CONTINIOUS_ALPHA * (double) gyro[2]) ;
             }
         }
 
@@ -607,26 +607,26 @@ public class LSM9DS1 {
 
     private void calibrateMagnetometer(float[] mag) {
 
-        mag[0] = (mag[0] - this.compassOffsetX) * this.compassScaleX;
-        mag[1] = (mag[1] - this.compassOffsetY) * this.compassScaleY;
-        mag[2] = (mag[2] - this.compassOffsetZ) * this.compassScaleZ;
+        mag[0] = ((double) mag[0] - (double) this.compassOffsetX) * this.compassScaleX;
+        mag[1] = ((double) mag[1] - (double) this.compassOffsetY) * this.compassScaleY;
+        mag[2] = ((double) mag[2] - (double) this.compassOffsetZ) * this.compassScaleZ;
 
         mag[0] -= COMPASS_ELLIPSOID_OFFSET_X;
         mag[1] -= COMPASS_ELLIPSOID_OFFSET_Y;
         mag[2] -= COMPASS_ELLIPSOID_OFFSET_Z;
 
-        mag[0] = mag[0] * COMPASS_ELLIPSOID_CORR_11 + mag[1] * COMPASS_ELLIPSOID_CORR_12
+        mag[0] = (((double) mag[0] * (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ELLIPSOID_CORR_11)  + ((double) mag[1] * (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ELLIPSOID_CORR_12) )
                 + mag[2] * COMPASS_ELLIPSOID_CORR_13;
 
-        mag[1] = mag[0] * COMPASS_ELLIPSOID_CORR_21 + mag[1] * COMPASS_ELLIPSOID_CORR_22
+        mag[1] = (((double) mag[0] * (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ELLIPSOID_CORR_21)  + ((double) mag[1] * (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ELLIPSOID_CORR_22) )
                 + mag[2] * COMPASS_ELLIPSOID_CORR_23;
 
-        mag[2] = mag[0] * COMPASS_ELLIPSOID_CORR_31 + mag[1] * COMPASS_ELLIPSOID_CORR_32
+        mag[2] = (((double) mag[0] * (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ELLIPSOID_CORR_31)  + ((double) mag[1] * (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ELLIPSOID_CORR_32) )
                 + mag[2] * COMPASS_ELLIPSOID_CORR_33;
 
-        this.CompassAverage[0] = mag[0] * COMPASS_ALPHA + this.CompassAverage[0] * (1.0F - COMPASS_ALPHA);
-        this.CompassAverage[1] = mag[1] * COMPASS_ALPHA + this.CompassAverage[1] * (1.0F - COMPASS_ALPHA);
-        this.CompassAverage[2] = mag[2] * COMPASS_ALPHA + this.CompassAverage[2] * (1.0F - COMPASS_ALPHA);
+        this.CompassAverage[0] = ((double) mag[0] * (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ALPHA)  + (this.CompassAverage[0] * ((double) 1.0F - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ALPHA));
+        this.CompassAverage[1] = ((double) mag[1] * (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ALPHA)  + (this.CompassAverage[1] * ((double) 1.0F - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ALPHA));
+        this.CompassAverage[2] = ((double) mag[2] * (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ALPHA)  + (this.CompassAverage[2] * ((double) 1.0F - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_ALPHA));
 
     }
 
@@ -636,19 +636,19 @@ public class LSM9DS1 {
         this.gyroBiasY = GYRO_BIAS_Y_INIT;
         this.gyroBiasZ = GYRO_BIAS_Z_INIT;
 
-        float compassSwingX = COMPASS_MAX_X - COMPASS_MIN_X;
-        float compassSwingY = COMPASS_MAX_Y - COMPASS_MIN_Y;
-        float compassSwingZ = COMPASS_MAX_Z - COMPASS_MIN_Z;
+        float compassSwingX = (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MAX_X - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MIN_X ;
+        float compassSwingY = (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MAX_Y - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MIN_Y ;
+        float compassSwingZ = (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MAX_Z - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MIN_Z ;
 
-        float maxCompassSwing = Math.max(compassSwingX, Math.max(compassSwingY, compassSwingZ)) / 2.0F;
+        float maxCompassSwing = (double) java.lang.Math.max(compassSwingX, java.lang.Math.max(compassSwingY, compassSwingZ)) / (double) 2.0F ;
 
-        this.compassScaleX = maxCompassSwing / (compassSwingX / 2.0F);
-        this.compassScaleY = maxCompassSwing / (compassSwingY / 2.0F);
-        this.compassScaleZ = maxCompassSwing / (compassSwingZ / 2.0F);
+        this.compassScaleX = maxCompassSwing / ((double) compassSwingX / (double) 2.0F);
+        this.compassScaleY = maxCompassSwing / ((double) compassSwingY / (double) 2.0F);
+        this.compassScaleZ = maxCompassSwing / ((double) compassSwingZ / (double) 2.0F);
 
-        this.compassOffsetX = (COMPASS_MAX_X + COMPASS_MIN_X) / 2.0F;
-        this.compassOffsetY = (COMPASS_MAX_Y + COMPASS_MIN_Y) / 2.0F;
-        this.compassOffsetZ = (COMPASS_MAX_Z + COMPASS_MIN_Z) / 2.0F;
+        this.compassOffsetX = ((double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MAX_X + (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MIN_X) / 2.0F;
+        this.compassOffsetY = ((double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MAX_Y + (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MIN_Y) / 2.0F;
+        this.compassOffsetZ = ((double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MAX_Z + (double) org.eclipse.kura.raspberrypi.sensehat.sensors.LSM9DS1.COMPASS_MIN_Z) / 2.0F;
 
     }
 

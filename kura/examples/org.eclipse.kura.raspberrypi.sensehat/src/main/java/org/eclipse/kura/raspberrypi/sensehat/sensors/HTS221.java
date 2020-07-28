@@ -185,10 +185,10 @@ public class HTS221 {
         t0_out = read(T0_OUT_H) << 8 | read(T0_OUT_L) & 0x000000FF;
         t1_out = read(T1_OUT_H) << 8 | read(T1_OUT_L) & 0x000000FF;
 
-        mt = (t1_degC - t0_degC) / (t1_out - t0_out);
+        mt = ((double) org.eclipse.kura.raspberrypi.sensehat.sensors.HTS221.t1_degC - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.HTS221.t0_degC) / (t1_out - t0_out);
         qt = -mt * t0_out + t0_degC;
 
-        mh = (h1_rh - h0_rh) / (h1_t0 - h0_t0);
+        mh = ((double) org.eclipse.kura.raspberrypi.sensehat.sensors.HTS221.h1_rh - (double) org.eclipse.kura.raspberrypi.sensehat.sensors.HTS221.h0_rh) / (h1_t0 - h0_t0);
         qh = -mh * h0_t0 + h0_rh;
 
         s_logger.debug("t0_degC : " + t0_degC);
